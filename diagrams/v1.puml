@@ -1,0 +1,132 @@
+@startuml
+
+object "Users" as Users {
+  _id: ObjectId
+  firstName: string
+  lastName: string
+  email: string
+  passwordHash: string
+  role: string
+  skills: [string]
+  bio: string
+  university: string
+  projects: [Projects]  // References to Projects
+  joinedProjects: [Projects]  // References to Projects
+  createdAt: Date
+  updatedAt: Date
+}
+
+object "Projects" as Projects {
+  _id: ObjectId
+  projectTitle: string
+  description: string
+  status: string  // "open", "in-progress", "completed"
+  creator: Users  // Reference to Users
+  team: Teams  // Reference to Teams
+  requiredSkills: [string]
+  category: string
+  published: boolean
+  milestones: [
+    milestoneTitle: string,
+    description: string,
+    deadline: Date
+  ]
+  progress: number  // Percentage completion
+  comments: [
+    user: Users,  // Reference to Users
+    comment: string,
+    timestamp: Date
+  ]
+  createdAt: Date
+  updatedAt: Date
+}
+
+object "Teams" as Teams {
+  _id: ObjectId
+  teamName: string
+  members: [Users]  // References to Users
+  project: Projects  // Reference to Projects
+  role: [
+    memberId: Users,  // Reference to Users
+    roleTitle: string  // "Team Leader", "Developer", etc.
+  ]
+  createdAt: Date
+  updatedAt: Date
+}
+
+object "Events" as Events {
+  _id: ObjectId
+  eventName: string
+  description: string
+  status: string  // "upcoming", "ongoing", "completed"
+  date: Date
+  teams: [Teams]  // References to Teams participating in the event
+  judges: [Judges]  // References to Judges (Users)
+  createdAt: Date
+  updatedAt: Date
+}
+
+object "Judges" as Judges {
+  _id: ObjectId  // Reference to Users with role "judge"
+  expertise: [string]  // List of areas of expertise
+  events: [Events]  // References to Events
+  createdAt: Date
+}
+
+object "Scores" as Scores {
+  _id: ObjectId
+  judge: Judges  // Reference to Judges (Users)
+  team: Teams  // Reference to Teams
+  event: Events  // Reference to Events
+  scores: [
+    category: string,  // Example: "Presentation", "Innovation"
+    score: number  // Score for the specific category
+  ]
+  totalScore: number  // Calculated total score across all categories
+  feedback: string  // Optional feedback
+  timestamp: Date
+}
+
+object "Applications" as Applications {
+  _id: ObjectId
+  applicant: Users  // Reference to Users
+  project: Projects  // Reference to Projects
+  applicationStatus: string  // "pending", "accepted", "rejected"
+  motivationLetter: string
+  skills: [string]
+  createdAt: Date
+}
+
+object "Messages" as Messages {
+  _id: ObjectId
+  sender: Users  // Reference to Users
+  recipient: Users  // Reference to Users or Teams
+  content: string
+  project: Projects  // Optional reference to Projects
+  team: Teams  // Optional reference to Teams
+  createdAt: Date
+}
+
+object "Feedback" as Feedback {
+  _id: ObjectId
+  giver: Users  // Reference to Users (mentors or team members)
+  recipient: Users  // Reference to Users
+  project: Projects  // Optional reference to Projects
+  comment: string
+  rating: number  // Optional rating (1-5)
+  createdAt: Date
+}
+
+Users::projects --> Projects : Owns
+Users::joinedProjects --> Projects : Joins
+Projects::team --> Teams : Has
+Teams::project --> Projects : Belongs to
+Teams::members --> Users : Consists of
+Teams::role --> Users : Includes
+Events::teams --> Teams : Participates
+Events::judges --> Judges : Involves
+Scores::judge --> Judges : Given by
+Scores::team --> Teams : Scored
+Scores::event --> Events : Belongs to
+
+@enduml
